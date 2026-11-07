@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0c1315">
+  <title>Пары</title>
+  <link rel="stylesheet" href="style.css?v=15">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand"><span class="logo">▮▮</span><span class="brand-name">Пары</span></div>
+  <button class="group-chip" id="groupChip">👥 <span id="groupLabel">Группа</span> ▾</button>
+  <button class="moon" id="themeBtn">☾</button>
+</header>
+
+<main id="screens">
+  <div id="errBanner" class="errbanner hidden"></div>
+  <!-- ГЛАВНАЯ -->
+  <section class="screen" data-screen="home">
+    <div class="date-line" id="homeDate">Сегодня</div>
+    <h1 class="headline" id="homeHeadline">Пары на сегодня</h1>
+    <div id="homeNext"></div>
+    <div class="card" id="homePlanCard">
+      <div class="card-head">
+        <div class="card-title" id="planTitle">План на сегодня</div>
+        <div class="card-meta" id="planMeta"></div>
+      </div>
+      <div id="planList"></div>
+    </div>
+  </section>
+
+  <!-- РАСПИСАНИЕ -->
+  <section class="screen hidden" data-screen="schedule">
+    <div class="segments" id="schedSegs">
+      <button class="seg active" data-seg="days">По дням</button>
+      <button class="seg" data-seg="subjects">Предметы</button>
+      <button class="seg" data-seg="teachers">Преподаватели</button>
+      <button class="seg" data-seg="session">Сессия</button>
+    </div>
+
+    <div id="segDays">
+      <div class="days" id="dayChips"></div>
+      <div id="dayContent"></div>
+    </div>
+
+    <div id="segSubjects" class="hidden"></div>
+    <div id="segTeachers" class="hidden"></div>
+    <div id="segSession" class="hidden"></div>
+  </section>
+
+  <!-- УЧЁБА -->
+  <section class="screen hidden" data-screen="study">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Эта неделя</div>
+        <div class="card-meta" id="weekTotal"></div>
+      </div>
+      <div class="chart" id="weekChart"></div>
+    </div>
+
+    <div class="tiles">
+      <button class="tile tile-accent" data-act="ask"><span class="tile-ico">💬</span><b>Спросить…</b><small>по лекциям</small></button>
+      <button class="tile" data-act="week"><span class="tile-ico">📊</span><b>Неделя</b><small id="tileWeekCount"></small></button>
+      <button class="tile" data-act="builds"><span class="tile-ico">🏢</span><b>Корпуса</b><small>адреса</small></button>
+      <button class="tile" data-act="notes"><span class="tile-ico">📝</span><b>Заметки</b><small>к любой паре</small></button>
+    </div>
+
+    <div class="card semester">
+      <svg class="ring" viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="42"></circle>
+        <circle class="ring-fg" id="ringFg" cx="50" cy="50" r="42"></circle>
+      </svg>
+      <div class="ring-label" id="ringLabel">0%</div>
+      <div class="semester-text">
+        <b>Семестр</b>
+        <div id="semStats"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Посещаемость</div>
+        <div class="card-meta" id="attMeta"></div>
+      </div>
+      <div class="progress"><i id="attBar" style="width:0%"></i></div>
+      <div class="hint" id="attText" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Группа</div>
+        <div class="card-meta" id="grpMeta"></div>
+      </div>
+      <div class="hint" id="grpText"></div>
+    </div>
+  </section>
+
+  <!-- ПРОФИЛЬ -->
+  <section class="screen hidden" data-screen="profile">
+    <div class="card profile-card">
+      <div class="avatar">👤</div>
+      <div>
+        <div class="profile-name" id="profileName">Студент</div>
+        <div class="hint" id="profileGroup">Группа</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Моя подгруппа</div>
+      <div class="row-buttons">
+        <button class="ghost" id="sub1">1 подгруппа</button>
+        <button class="ghost" id="sub2">2 подгруппа</button>
+      </div>
+      <div class="hint" id="subHint" style="margin-top:10px">От подгруппы зависит, какие пары показывать.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">База студентов</div><div class="card-meta" id="studentsCount">0</div></div>
+      <div id="studentsList" class="students"></div>
+      <div class="row-buttons">
+        <button class="ghost" id="addStudentBtn">+ Студент</button>
+        <button class="ghost" id="importStudentsBtn">📥 Импорт Excel/CSV</button>
+      </div>
+      <button class="ghost wide" id="pasteStudentsBtn">…или вставить списком</button>
+      <input type="file" id="studentsFile" accept=".xlsx,.xls,.csv,.txt,text/csv" hidden />
+    </div>
+
+    <div class="card">
+      <div class="card-title">Данные</div>
+      <div class="row-buttons">
+        <button class="ghost" id="importJsonBtn">Импорт JSON</button>
+        <button class="ghost" id="exportBtn">Экспорт JSON</button>
+      </div>
+      <input type="file" id="jsonFile" accept="application/json" hidden />
+      <button class="ghost wide" id="pasteBtn">📋 Импорт расписания из текста</button>
+      <button class="ghost wide danger" id="resetBtn">Сбросить всё</button>
+    </div>
+
+    <div class="card hidden" id="starostaCard">
+      <div class="card-head">
+        <div class="card-title">Отметка группы</div>
+        <div class="card-meta" id="starostaDate"></div>
+      </div>
+      <div class="hint" id="starostaHint"></div>
+      <label class="field"><span>Пара</span><select id="starostaLesson"></select></label>
+      <div id="starostaList" class="students"></div>
+      <div class="row-buttons">
+        <button class="ghost" id="starostaAll">Все присутствуют</button>
+        <button class="primary" id="starostaSave">Сохранить</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Диагностика</div>
+      <div class="hint" id="diagText"></div>
+      <button class="ghost wide" id="diagBtn">Проверить связь с сервером</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Помощь и предложения</div>
+      <div class="hint">Вопросы, ошибки, идеи по расписанию и приложению — пишите автору.</div>
+      <button class="ghost wide" id="contactBtn">✉️ Написать @honness</button>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button class="tab active" data-tab="home"><span>⌂</span>Главная</button>
+  <button class="tab" data-tab="schedule"><span>▤</span>Расписание</button>
+  <button class="tab center" id="micBtn"><span>🎙</span></button>
+  <button class="tab" data-tab="study"><span>📖</span>Учёба</button>
+  <button class="tab" data-tab="profile"><span>👤</span>Профиль</button>
+</nav>
+
+<!-- Заметки -->
+<div class="sheet hidden" id="notesSheet">
+  <div class="sheet-card">
+    <h3>Заметка на пару</h3>
+    <p class="hint" id="notesHint"></p>
+    <textarea id="notesArea" rows="8" placeholder="Что записать…"></textarea>
+    <div class="row-buttons">
+      <button class="ghost" data-close="notesSheet">Отмена</button>
+      <button class="primary" id="saveNotes">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Редактор пары -->
+<div class="sheet hidden" id="editorSheet">
+  <div class="sheet-card">
+    <h3 id="editorTitle">Новая пара</h3>
+    <div class="grid2">
+      <label class="field"><span>Начало</span><input type="time" id="fStart"></label>
+      <label class="field"><span>Конец</span><input type="time" id="fEnd"></label>
+    </div>
+    <label class="field"><span>Предмет</span><input type="text" id="fSubject" placeholder="Геометрия"></label>
+    <div class="grid2">
+      <label class="field"><span>Тип</span>
+        <select id="fType"><option>Лекция</option><option>Практика</option><option>Лабораторная</option><option>Семинар</option><option>Зачёт</option><option>Экзамен</option></select>
+      </label>
+      <label class="field"><span>Аудитория</span><input type="text" id="fRoom" placeholder="219(1)"></label>
+    </div>
+    <label class="field"><span>Преподаватель</span><input type="text" id="fTeacher" placeholder="Рязанцева Е.А."></label>
+    <div class="row-buttons">
+      <button class="ghost" data-close="editorSheet">Отмена</button>
+      <button class="primary" id="saveLesson">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Импорт текста -->
+<div class="sheet hidden" id="textSheet">
+  <div class="sheet-card">
+    <h3>Импорт из текста</h3>
+    <p class="hint">Вставьте расписание с сайта вуза. Дни недели и время распознаются автоматически.</p>
+    <textarea id="pasteArea" rows="8" placeholder="Понедельник&#10;09:40–11:10  Геометрия  Практика  ауд. 219(1)  Рязанцева Е.А."></textarea>
+    <div class="row-buttons">
+      <button class="ghost" data-close="textSheet">Отмена</button>
+      <button class="primary" id="doPaste">Импортировать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Импорт студентов -->
+<div class="sheet hidden" id="studentSheet">
+  <div class="sheet-card">
+    <h3>Импорт базы студентов</h3>
+    <p class="hint">Вставьте список: по одному студенту в строке, поля через «;» или табуляцию.<br>Пример: <code>Иванов Иван Иванович;03-ОФО-ЕМТ-ПЕД(мф)-2026;12345</code></p>
+    <textarea id="studentsArea" rows="8" placeholder="Иванов Иван;03-ОФО-ЕМТ-ПЕД(мф)-2026;12345&#10;Петров Пётр;03-ОФО-ЕМТ-ПЕД(мф)-2026;12346"></textarea>
+    <div class="row-buttons">
+      <button class="ghost" data-close="studentSheet">Отмена</button>
+      <button class="primary" id="doStudentsImport">Импортировать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Выбор учебного заведения -->
+<div class="sheet hidden" id="instSheet">
+  <div class="sheet-card">
+    <h3>Учебное заведение</h3>
+    <button class="ghost wide" id="instLgpu">ЛГПУ · 03-ОФО-ЕМТ-ПЕД(мф)-2026</button>
+    <button class="ghost wide" id="instKiimo">КИИМО · ИСиП-25-2</button>
+    <div class="row-buttons" style="margin-top:12px" id="instCloseRow">
+      <button class="ghost" data-close="instSheet">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="config.js?v=15"></script>
+<script src="schedule.js?v=15"></script>
+<script src="app.js?v=15"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+name: Reminders
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # каждые 10 минут
+  workflow_dispatch:          # можно запустить вручную
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call tg-reminders
+        run: |
+          echo "Запрос напоминаний..."
+          curl -sS -X POST \
+            "https://bfpazddbjnarywofzadv.supabase.co/functions/v1/tg-reminders" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            --max-time 60
+          echo ""
